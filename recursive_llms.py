@@ -1,14 +1,14 @@
-import openai
+from openai import OpenAI
 import os
 import re
 import io
 import contextlib
 import sys
 
-# Set your OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
-if not openai.api_key:
+if not os.getenv("OPENAI_API_KEY"):
     raise ValueError("Please set the OPENAI_API_KEY environment variable.")
+
+client = OpenAI()
 
 def extract_code(response):
     """Extract REPL code from the LLM response (triple-backtick block with 'repl')."""
@@ -26,7 +26,7 @@ def extract_final(response):
         return repl_globals.get(var_name, "No variable found")
     return "No final answer found"
 
-def rlm(query, context, model="gpt-4", sub_model="gpt-3.5-turbo", max_depth=5, depth=0):
+def rlm(query, context, model="gpt-4o-mini", sub_model="gpt-4o-mini", max_depth=5, depth=0):
     """
     Recursive Language Model implementation.
     
@@ -91,10 +91,11 @@ Be efficient: Batch chunks, minimize llm_query calls, use filtering.
     max_iterations = 10  # Prevent infinite loops
     for _ in range(max_iterations):
         # Call LLM
-        response = openai.ChatCompletion.create(
+        completion = client.chat.completions.create(
             model=model if depth == 0 else sub_model,
-            messages=history
-        ).choices[0].message.content
+            messages=history,
+        )
+        response = completion.choices[0].message.content
         
         history.append({"role": "assistant", "content": response})
         
