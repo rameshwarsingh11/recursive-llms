@@ -1,0 +1,37 @@
+@startuml
+
+title Sequence Diagram for Recursive Language Model (RLM)
+
+actor User
+participant "rlm()" as RLM
+participant "OpenAI API" as OpenAI
+participant "REPL Environment" as REPL
+
+User -> RLM: Provide query and context
+RLM -> RLM: Check recursion depth
+alt Depth > max_depth
+    RLM --> User: Return "Max recursion depth reached"
+end
+
+RLM -> RLM: Initialize REPL environment
+RLM -> RLM: Define llm_query() for recursion
+RLM -> RLM: Construct system prompt
+
+loop Max iterations
+    RLM -> OpenAI: Send query and history
+    OpenAI --> RLM: Return response
+    RLM -> RLM: Check for REPL code
+    alt REPL code found
+        RLM -> REPL: Execute REPL code
+        REPL --> RLM: Return output
+        RLM -> RLM: Append output to history
+    end
+    RLM -> RLM: Check for FINAL() or FINAL_VAR()
+    alt FINAL found
+        RLM --> User: Return final answer
+    end
+end
+
+RLM --> User: Return "Max iterations reached without final answer"
+
+@enduml
