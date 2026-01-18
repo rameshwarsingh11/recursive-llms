@@ -59,8 +59,8 @@ Implements the Recursive Language Model.
 - **Parameters**:
   - `query` (str): The user's query.
   - `context` (str): The long context string.
-  - `model` (str): The root LLM model (default: `"gpt-4"`).
-  - `sub_model` (str): The sub-LLM model for recursion (default: `"gpt-3.5-turbo"`).
+  - `model` (str): The root LLM model (default: `"gpt-4o-mini"`).
+  - `sub_model` (str): The sub-LLM model for recursion (default: `"gpt-4o-mini"`).
   - `max_depth` (int): Maximum recursion depth to prevent stack overflow (default: `5`).
   - `depth` (int): Current recursion depth (default: `0`).
 - **Returns**:
