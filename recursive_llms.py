@@ -58,12 +58,10 @@ def rlm(query, context, model="gpt-4o-mini", sub_model="gpt-4o-mini", max_depth=
     
     # Metadata for prompt
     context_len = len(context)
-    metadata = f"Context length: {context_len} characters. You can slice or search it programmatically."
-    
-    # System prompt (adapted from the paper)
+    # Sanitize system_prompt to remove non-ASCII characters
     system_prompt = """
 You are a Recursive Language Model tasked with answering a query using a long context stored in a REPL environment.
-The full context is available as the variable 'context' (a string). Do NOT assume you can see the entire context at once—it's too long.
+The full context is available as the variable 'context' (a string). Do NOT assume you can see the entire context at once-it's too long.
 Instead, use Python code in ```repl blocks to inspect, slice, search (e.g., via regex), or process it.
 
 Available tools:
@@ -80,6 +78,9 @@ Process:
 
 Be efficient: Batch chunks, minimize llm_query calls, use filtering.
 """
+
+    # Sanitize metadata to ensure ASCII compatibility
+    metadata = f"Context length: {context_len} characters. You can slice or search it programmatically."
     
     # Initial user prompt
     user_prompt = f"{metadata}\nQuery: {query}"
@@ -90,6 +91,16 @@ Be efficient: Batch chunks, minimize llm_query calls, use filtering.
     
     max_iterations = 10  # Prevent infinite loops
     for _ in range(max_iterations):
+        # Debugging: Log headers to identify problematic characters
+        # print("Debugging headers:", history)
+        
+        # Force ASCII encoding for all strings in history
+        for message in history:
+            message['content'] = message['content'].encode('ascii', 'replace').decode('ascii')
+
+        # Debugging: Log sanitized headers
+        # print("Sanitized headers:", history)
+
         # Call LLM
         completion = client.chat.completions.create(
             model=model if depth == 0 else sub_model,
